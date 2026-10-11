@@ -1,6 +1,6 @@
-# Bangla_SusthoSathi — ShasthoSathi project page
+# Bangla_ShasthoSathi — ShasthoSathi project page
 
-Live at **https://cimilab.github.io/Bangla_SusthoSathi/** (web app at `/app/`).
+Live at **https://cimilab.github.io/Bangla_ShasthoSathi/** (web app at `/app/`).
 
 Static site, no build step: project page (`index.html`, `css/`, `js/`, `assets/`) and the full in-browser web app
 (`app/`). Everything runs in the visitor's browser; nothing is uploaded.
