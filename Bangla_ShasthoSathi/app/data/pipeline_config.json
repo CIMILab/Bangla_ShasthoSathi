@@ -1,0 +1,12 @@
+{
+ "ner_variant": "int8",
+ "pii_variant": {
+  "bn": "int8emb",
+  "en": "int8noattn"
+ },
+ "agg": "mean",
+ "threshold": 0.1,
+ "rules_v2": true,
+ "pii_mb": 688.6,
+ "chosen_on": "dev+free_dev, model alone, clinical hidden <= 0.1, other text hidden <= 0.1, PII models <= 700 MB"
+}

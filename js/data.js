@@ -93,23 +93,22 @@ export const TABLES = {
     hl: 0,
   },
   quant: {
-    caption: "Mobile privacy tuning (PII models alone; % of names or spans missed). Selected on development data.",
+    caption: "Mobile privacy tuning (PII models alone, server; % of unlabelled names missed). Selected on development data; the E7c choice was replaced after the on-phone leak test.",
     cols: ["PII models", "Size (MB)", "Free dev", "Free test", "Free, Bengali"],
     num: [1, 2, 3, 4],
     rows: [
       ["FP32 (both)", "1602", "3.3", "0.7", "0.0"], ["INT8 plain (both)", "486", "52.7", "50.7", "100.0"],
-      ["INT8 reduced range (both)", "486", "35.7", "33.0", "25.5"], ["INT8 embedding only (both)", "770", "3.3", "0.7", "0.0"],
-      ["BN embedding-only + EN no-attention — chosen", "689", "3.5", "1.0", "0.0"],
+      ["INT8 reduced range (both)", "486", "35.7", "33.0", "25.5"], ["INT8 embedding only (both) — shipped", "770", "3.3", "0.7", "0.0"],
+      ["BN embedding-only + EN no-attention (E7c; leaked on the phone)", "689", "3.5", "1.0", "0.0"],
     ],
-    hl: 4,
+    hl: 3,
   },
   ocr: {
-    caption: "Table VII. OCR of printed sheets (%). Desktop proxy with the same Tesseract fast ben+eng models; phone rows pending (Samsung Galaxy S23 Ultra).",
+    caption: "OCR of printed sheets (%). Desktop proxy with the phone's Tesseract fast ben+eng models; phone photographs are future work.",
     cols: ["Setting", "Condition", "CER", "Rows exact", "Flags ok", "Leak (rules)"],
     rows: [
       ["Proxy", "clean", "1.6", "65.2", "81.8", "8.4"], ["Proxy", "tilted 3°", "2.5", "48.5", "71.2", "15.3"],
       ["Proxy", "half resolution", "2.7", "42.4", "75.8", "12.4"],
-      ["S23, Auto", "flat / angled / dim", "pending", "pending", "pending", "pending"],
     ],
   },
   impl: {
@@ -122,8 +121,30 @@ export const TABLES = {
       ["Judge", "Qwen2.5-14B-Instruct (4-bit); rubric v2 extracts the stated status, code scores it"],
       ["Statistics", "bootstrap CI (2,000), McNemar, Welch t, sign test, Cohen's κ, rule of three"],
       ["Compute", "Hellbender HPC (NVIDIA H100); PyTorch 2.14, Transformers 4.57, OpenMed 2.5, ONNX Runtime 1.25"],
-      ["Phone", "Kotlin + Jetpack Compose; no INTERNET permission; ML Kit + Tesseract4Android; Samsung Galaxy S23 Ultra"],
+      ["Phone", "Kotlin + Jetpack Compose; no INTERNET permission; ML Kit + Tesseract4Android; ONNX Runtime Android 1.20 + DJL tokenizers 0.33; Samsung Galaxy S23 Ultra"],
       ["Web", "In-browser: JS core, Tesseract.js, ONNX Runtime Web, tokenizers.js; WebCrypto vault; CSP self-only"],
+    ],
+  },
+  phone: {
+    caption: "On-phone leak test (Galaxy S23 Ultra) vs. server, same 1,100 documents and metric (%; Med./lab hit = phone / server). *English INT8 except attention, replaced.",
+    cols: ["Set (n)", "Leak, phone", "Leak, server", "Med./lab hit", "Same spans"],
+    num: [1, 2],
+    rows: [
+      ["Held-out (300)", "0.0", "0.0", "0.0 / 0.0", "300 / 300"],
+      ["Real (400)", "0.0", "0.0", "3.1 / 3.8", "398 / 400"],
+      ["Free (400)", "0.75", "0.75", "3.8 / 3.8", "399 / 400"],
+      ["Free, first EN model*", "15.5", "1.0", "3.1 / 3.1", "297 / 400"],
+    ],
+    hl: 2,
+  },
+  phonespeed: {
+    caption: "Galaxy S23 Ultra (Android 16, 8 cores), shipped configuration, 4 threads.",
+    cols: ["Measure", "Value"],
+    rows: [
+      ["Per report, all three models (median / p90)", "262 / 524 ms"], ["of which models", "260 ms"],
+      ["Rules + template (no models)", "0.96 ms"], ["Model loading", "3–4 s"],
+      ["Model folder on the phone", "900 MB"], ["App memory (PSS)", "2.0 GB"],
+      ["Self-test: token ids", "identical (3 models)"], ["Self-test: word labels", "identical (both PII models); tagger 1.1% differ"],
     ],
   },
   golden: {

@@ -145,3 +145,11 @@ table.mini { font-size: 13px; box-shadow: none; } table.mini td { padding: 6px 8
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .subnav button.on, :root:not([data-theme="light"]) .toggle button.on,
   :root:not([data-theme="light"]) .case-tabs button.on, :root:not([data-theme="light"]) .tag { color: #032a26; } }
 :root[data-theme="dark"] .case-tabs button.on { color: #032a26; }
+
+/* v0.4 page update: paper figures shown full width, text version of Fig. 1, two phone screenshots */
+.fig.wide { margin: 8px 0 20px; }
+.fig.wide img { width: 100%; height: auto; background: #fff; border-radius: 12px; padding: 10px; border: 1px solid var(--line); cursor: zoom-in; box-sizing: border-box; }
+details.flowtext { margin: 0 0 8px; } details.flowtext > summary { cursor: pointer; color: var(--teal); font-weight: 600; margin-bottom: 10px; }
+.shots.phone2 { grid-template-columns: 1fr 1fr; align-items: start; }
+@media (max-width: 640px) { .shots.phone2 { grid-template-columns: 1fr 1fr; } }
+.shots.phone2 img { max-height: 560px; object-fit: contain; object-position: top; background: var(--surface); }

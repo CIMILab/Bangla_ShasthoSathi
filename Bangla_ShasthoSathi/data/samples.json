@@ -1,0 +1,50 @@
+{
+ "note": "Synthetic reports from the held-out set (invented people). Not real patients.",
+ "samples": [
+  {
+   "id": "heldout_lab_0000",
+   "title": "Lab report 1",
+   "text": "TEESTA GENERAL HOSPITAL\nSadar Road, Barishal\nPatient: Nusrat Mollah   Age: 70 F\nLab ID: KDX-24-57931   Date: 19/01/2025\nMobile: 01365-538485\nRef. by: Dr. Saiful Mollah\nTest   Result   Reference\nHaemoglobin   10.2 g/dL   12.0-15.5\nWBC Count   1.7 x10^9/L   4.0-11.0\nFasting Blood Sugar   4.8 mmol/L   3.9-6.1\nS. Creatinine   0.89 mg/dL   0.60-1.10\nVitamin D (25-OH)   21.9 ng/mL   30.0-100.0\nSGPT (ALT)   1 U/L   7-45\nReported by: Dr. Delwar Mollah, Consultant Pathologist\n"
+  },
+  {
+   "id": "heldout_lab_0001",
+   "title": "Lab report 2",
+   "text": "BRAHMAPUTRA PATHOLOGY LAB\nUttara Sector-7, Dhaka\nPatient: Jashim Sheikh   Age: 49 M\nLab ID: KDX-25-51175   Date: 15-10-26\nMobile: 01541-932967\nRef. by: Dr. Saiful Mollah\nTest   Result   Reference\nPlatelet Count   49 x10^9/L   150-400\nTSH   1.63 mIU/L   0.40-4.00\nTotal Cholesterol   234 mg/dL   125-200\nSerum Uric Acid   5.9 mg/dL   2.4-6.0\nSGPT (ALT)   28 U/L   7-45\nReported by: Dr. Lipi Howlader, Consultant Pathologist\n"
+  },
+  {
+   "id": "heldout_lab_0002",
+   "title": "Lab report 3",
+   "text": "BRAHMAPUTRA PATHOLOGY LAB\nJahaj Company Mor, Rangpur\nPatient: Tahmina Mollah   Age: 78 F\nLab ID: MHP-25-97051   Date: 03.01.2026\nMobile: 01797-961850\nRef. by: Dr. Sharmin Khan\nTest   Result   Reference\nHaemoglobin   12.8 g/dL   12.0-15.5\nTSH   3.06 mIU/L   0.40-4.00\nTotal Cholesterol   194 mg/dL   125-200\nHbA1c   4.3 %   4.0-5.6\nFasting Blood Sugar   4.5 mmol/L   3.9-6.1\nReported by: Dr. Mostafa Karim, Consultant Pathologist\n"
+  },
+  {
+   "id": "heldout_lab_0003",
+   "title": "Lab report 4",
+   "text": "DHALESHWARI SPECIALIZED HOSPITAL\nSadar Road, Barishal\nPatient: Lipi Khan   Age: 79 F\nLab ID: PMS-24-20876   Date: 06.03.2025\nMobile: 01411-608520\nRef. by: Dr. Kamrul Pramanik\nTest   Result   Reference\nHbA1c   4.9 %   4.0-5.6\nTriglyceride   183 mg/dL   40-150\nPlatelet Count   121 x10^9/L   150-400\nReported by: Dr. Belal Karim, Consultant Pathologist\n"
+  },
+  {
+   "id": "heldout_lab_0004",
+   "title": "Lab report 5",
+   "text": "MADHUMATI CLINIC\nSadar Road, Barishal\nPatient: Rumana Mollah   Age: 48 F\nLab ID: JCL-24-34983   Date: 03/04/2026\nMobile: 01353-729908\nRef. by: Dr. Rezaul Talukder\nTest   Result   Reference\nPlatelet Count   202 x10^9/L   150-400\nFasting Blood Sugar   5.3 mmol/L   3.9-6.1\nTotal Cholesterol   215 mg/dL   125-200\nHaemoglobin   13.7 g/dL   12.0-15.5\nReported by: Dr. Selina Siddique, Consultant Pathologist\n"
+  },
+  {
+   "id": "heldout_rx_mixed_0000",
+   "title": "Prescription 6",
+   "text": "Dr. Maksuda Howlader, MBBS\nChamber: Dhaleshwari Specialized Hospital, Amberkhana, Sylhet\nPt: Maksuda Pramanik   34 F   Date: 16.12.2026\nRx\n1. Cap. Seclo 40 mg   ১+১+০ — খাবার আগে — ৭ দিন\n2. Tab. Ace 500 mg   ১+১+১ — খাবার আগে — চলবে\n3. Tab. Comet 850 mg   1+1+1 — খাবার আগে — চলবে\nপরামর্শ: নিয়মিত হাঁটবেন। পর্যাপ্ত পানি পান করবেন।\n"
+  },
+  {
+   "id": "heldout_rx_mixed_0001",
+   "title": "Prescription 7",
+   "text": "Dr. Rumana Mollah, MBBS, DDV\nChamber: Teesta General Hospital, Kazla, Rajshahi\nPt: Rumana Mollah   41 F   Date: 26-09-26\nRx\n1. Tab. Fexo 180 mg   ০+১+০ — খাবার পরে — ৭ দিন\n2. Cap. Sergel 20 mg   ১+০+১ — খাবার আগে — ১০ দিন\n3. Tab. Monas 10 mg   ১+১+০ — খাবার আগে — ১০ দিন\n4. Tab. Ace 500 mg   ০+০+১ — খাবার পরে — ৭ দিন\nপরামর্শ: নিয়মিত হাঁটবেন। পর্যাপ্ত পানি পান করবেন।\n"
+  },
+  {
+   "id": "heldout_bn_0000",
+   "title": "বাংলা নোট 8",
+   "text": "রোগীর নাম: রেজাউল মোল্লা, বয়স: ৭৯ বছর\nঠিকানা: মোহাম্মদপুর, ঢাকা\nমোবাইল: ০১৫৩৮-৫১৮৮৩৪\nএনআইডি: ৭৭১৮৩১২৭২২\nভর্তির তারিখ: ১৯.১০.২০২৫\nরোগীকে Amdocal ৫ মি.গ্রা. দেওয়া হয়েছে, ১+১+০ খাবার পরে। চিকিৎসক: ডা. নুসরাত মোল্লা।\n"
+  },
+  {
+   "id": "heldout_bn_0001",
+   "title": "বাংলা নোট 9",
+   "text": "রোগীর নাম: আনোয়ার ভূঁইয়া, বয়স: ৪৪ বছর\nঠিকানা: আম্বরখানা, সিলেট\nমোবাইল: ০১৫৫৮-৬২৯২৭২\nএনআইডি: ৪৮৩৯২১৪৪৪১\nভর্তির তারিখ: ০৮/০৮/২০২৬\nরোগীকে Monas ১০ মি.গ্রা. দেওয়া হয়েছে, ০+১+০ খাবার পরে। চিকিৎসক: ডা. সাইফুল তালুকদার।\n"
+  }
+ ]
+}

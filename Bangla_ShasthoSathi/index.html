@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShasthoSathi — Privacy-Preserving On-Device Explanation of Bengali Health Reports</title>
+<meta name="description" content="Fact-grounded small language models and code-mixed clinical NER for privacy-preserving, on-device explanation of Bengali health reports. Phone app, web app, code and results.">
+<meta name="keywords" content="Bengali NLP, code-mixed NER, de-identification, small language models, grounded generation, LLM-as-a-judge, quantization, on-device, ONNX, health literacy">
+<meta property="og:title" content="ShasthoSathi — on-device explanation of Bengali health reports">
+<meta property="og:description" content="Rules decide, encoders recognise, templates speak: what small LLMs can and cannot do for Bengali lab reports.">
+<meta property="og:image" content="https://cimilab.github.io/Bangla_ShasthoSathi/assets/screens/web_summary.jpg">
+<meta name="theme-color" content="#0F766E">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body id="top">
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav-in">
+    <a class="brand" href="#top"><img src="assets/logo.svg" width="30" height="30" alt=""><span>ShasthoSathi</span></a>
+    <div class="links">
+      <a href="#overview">Overview</a><a href="#method">Data &amp; Method</a><a href="#results">Results</a>
+      <a href="#products">App &amp; Web</a><a href="#demo">Live demo</a><a href="#cases">Cases</a><a href="#citation">Citation</a>
+    </div>
+    <button class="theme" id="theme" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">NLP &amp; LLMs · Privacy-preserving clinical NLP · Bengali</p>
+    <h1>Fact-Grounded Small Language Models and Code-Mixed Clinical NER for Privacy-Preserving On-Device Explanation of Bengali Health Reports</h1>
+    <p class="authors"><b>Samrat Kumar Dey</b><sup>1</sup></p>
+    <p class="affil"><sup>1</sup>Institute for Data Science and Informatics, University of Missouri, Columbia, MO, USA</p>
+    <p class="lede">Bengali speakers receive lab reports and prescriptions in English or code-mixed “Banglish” and increasingly paste them into cloud chatbots.
+      <b>ShasthoSathi</b> (স্বাস্থ্যসাথী, “health companion”) explains them <b>on the device</b>: hybrid de-identification, code-mixed medicine recognition,
+      rule-based abnormality flags and a <b>template-first</b> explanation. Small LLMs help only where they are verifiably safe.</p>
+    <div class="buttons">
+      <a class="btn" href="assets/paper_draft.pdf">📄 Paper (draft)</a>
+      <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi">⌨ Code</a>
+      <a class="btn accent" href="app/">▶ Launch web app</a>
+      <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi/releases">📱 Android app</a>
+      <a class="btn ghost" href="#demo">Try the live demo</a>
+    </div>
+    <div class="counters">
+      <div class="ctr"><b data-count="0" data-dec="1" data-suffix="%">0</b><span>identifier leak on held-out &amp; real text<br><small>95% upper bound 0.16%</small></span></div>
+      <div class="ctr"><b data-count="81" data-suffix="%">0</b><span>Bengali-script medicine recall<br><small>from &lt;10% zero-shot</small></span></div>
+      <div class="ctr"><b data-count="97" data-suffix="%">0</b><span>correct English explanations<br><small>Qwen3-1.7B, strict + facts</small></span></div>
+      <div class="ctr"><b data-count="100" data-suffix="%">0</b><span>Bengali template correct<br><small>vs 60% for the best LLM (native rater)</small></span></div>
+      <div class="ctr"><b data-count="2327">0</b><span>golden cases identical<br><small>Python = Kotlin = JavaScript</small></span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================================================================ ABSTRACT -->
+<section class="wrap narrow" id="abstract">
+  <h2>Abstract</h2>
+  <p>We study whether small, locally runnable language models can explain laboratory reports and prescriptions safely in Bengali, and build ShasthoSathi, an offline pipeline with four stages: hybrid de-identification, code-mixed medicine recognition, rule-based abnormality flagging and explanation.
+  On held-out synthetic reports and real clinical text with injected identifiers, combining format rules with OpenMed PII models and protecting fine-tuned medicine spans <b>reduced the identifier leak from 10.3% to 0%</b> (95% upper bound 0.16%) while limiting clinical over-redaction to 6.9% on real text.
+  Fine-tuning on Bangla-HealthNER raised <b>Bengali-script medicine recall from below 10% to 81%</b>, and INT8 export reduced the tagger to 106 MB with a 0.09-point F1 loss.
+  Four instruction-tuned models (0.5B–3.8B) <b>flipped high/low in 17–42% of abnormal results</b> when reading reports directly; a rule-computed fact sheet and a strict prompt raised Qwen3-1.7B to 97% correct and 96% safe in English (validated LLM judge, κ = 0.80).
+  In Bengali every model failed: a blinded native-speaker check rated a <b>deterministic template 100% correct versus 60%</b> for the best model.
+  We also show that standard dynamic INT8 quantization <b>silently destroys a Bengali PII model's ability to find unlabelled names</b> (100% missed), whereas quantizing only the embedding table preserves full accuracy at half the size.</p>
+
+  <h3>Research questions</h3>
+  <div class="rq">
+    <div class="card"><span class="tag">RQ1</span><b>Privacy</b><p>Can rules + small PII models de-identify code-mixed Bengali reports without erasing the medicines and lab values the patient needs?</p></div>
+    <div class="card"><span class="tag">RQ2</span><b>Recognition</b><p>Can a fine-tuned encoder find medicines written in Bengali script as well as in Latin script?</p></div>
+    <div class="card"><span class="tag">RQ3</span><b>Explanation</b><p>When do small LLMs explain lab results correctly and safely, in English and in Bengali?</p></div>
+    <div class="card"><span class="tag">RQ4</span><b>Deployment</b><p>Do the models survive quantization and export to a phone and a browser, with identical behaviour?</p></div>
+  </div>
+</section>
+
+<!-- ================================================================ OVERVIEW -->
+<section class="band" id="overview">
+  <div class="wrap">
+    <h2>Overview</h2>
+    <p class="sub">Two design rules follow from the experiments: <b>an LLM never decides whether a value is abnormal</b> (rules compare each value with the report's own range), and <b>an LLM never sees the report</b> (only an identifier-free fact sheet).</p>
+    <figure class="flow" aria-label="ShasthoSathi pipeline">
+      <div class="lane read"><h4>① Read</h4>
+        <div class="box">Photo or pasted text<small>English · Bengali · mixed</small></div>
+        <div class="box">On-device OCR<small>ML Kit (Latin) · Tesseract ben+eng · row rebuilding</small></div>
+        <div class="box human">User checks text against photo<small>human in the loop</small></div></div>
+      <div class="lane protect"><h4>② Protect</h4>
+        <div class="box">Format rules v1 + v2<small>phone · NID · IDs · facility · address · date · name · Dr./ডা.</small></div>
+        <div class="box">OpenMed PII models<small>Bengali / English, routed by script</small></div>
+        <div class="box keep">− protected spans<small>medicine/dosage tagger · lab rows</small></div>
+        <div class="box out">De-identified text<small>identifiers → [TYPE] tags</small></div></div>
+      <div class="lane explain"><h4>③ Explain</h4>
+        <div class="box">Lab-row parser<small>rules flag HIGH / LOW / NORMAL</small></div>
+        <div class="box">Fact sheet<small>test · value · unit · range · flag</small></div>
+        <div class="box out">Bengali: deterministic template<small>patient-facing test names</small></div>
+        <div class="box opt">English (optional): Qwen3-1.7B, strict<small>shown only if the number + coverage gate passes</small></div></div>
+      <figcaption>Fig. 1. ShasthoSathi pipeline. Every stage runs offline. The Android app has no internet permission; the web app runs inside the browser tab.
+        <a href="#" data-zoom="assets/figs/pipeline.svg">Paper version of the figure</a>.</figcaption>
+    </figure>
+    <div class="stats">
+      <div><b>4</b><span>stages</span></div><div><b>0</b><span>network calls</span></div><div><b>689 MB</b><span>phone privacy models</span></div><div><b>106 MB</b><span>INT8 medicine tagger</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ DATA & METHOD -->
+<section class="wrap" id="method">
+  <h2>Data &amp; Method</h2>
+  <div class="grid2">
+    <div>
+      <h3>Data</h3>
+      <p>No licensed or data-use-agreement corpora were used. <b>Bangla-HealthNER</b> (31,783 posts, seven entity types) trains and tests the medicine tagger. <b>Synthetic reports</b> (Bangladeshi lab reports, mixed and English prescriptions, Bengali notes) carry gold offsets; the held-out set uses a vocabulary disjoint from development, so rules cannot memorise names. <b>Real text</b> from PMC-Patients and HealthNER is wrapped with injected identifiers, and a harder <b>free-text set</b> hides names inside sentences without any field label.</p>
+      <div class="tbl" data-table="data"></div>
+    </div>
+    <figure class="fig"><img src="assets/figs/e0_script.svg" alt="Script of entity mentions" data-zoom><figcaption>Fig. 2. Script of gold mentions in Bangla-HealthNER. Medicines are mostly Latin-script, symptoms mostly Bengali; a quarter of dosages mix both — one monolingual model cannot cover it.</figcaption></figure>
+  </div>
+
+  <h3>Method in four steps</h3>
+  <ol class="steps">
+    <li><b>Hybrid de-identification.</b> Format rules ∪ OpenMed PII models routed by script. Fine-tuned medicine/dosage spans and parsed lab rows are subtracted from model spans (never from rule spans), then trimmed. Threshold: lowest leak with clinical over-redaction ≤ 10% on dev.</li>
+    <li><b>Code-mixed medicine NER.</b> BanglaBERT, BanglishBERT, XLM-R and the OpenMed Bengali encoder fine-tuned on Bangla-HealthNER (BIO on first sub-word; three seeds), plus LoRA variants. Exported to ONNX and INT8.</li>
+    <li><b>Rule-grounded explanation.</b> The parser flags each value against the report's own range. A bilingual template is the baseline; four small LLMs are compared under <i>free</i>, <i>grounded</i> (fact sheet) and <i>strict</i> prompts, each output passing a number + coverage gate.</li>
+    <li><b>Evaluation.</b> Leak / over-redaction with bootstrap CIs and McNemar; exact-span F1 by script; a validated LLM judge (rubric v2, κ = 0.80) and a blinded native-speaker check; quantization tested per language on unlabelled names.</li>
+  </ol>
+
+  <div class="grid2 algos">
+    <div class="algo"><div class="algo-h">Algorithm 1 &nbsp;ShasthoSathi inference on one report</div><pre>
+<b>Require</b> image I or text x; language ℓ ∈ {en, bn}; threshold τ
+<b>if</b> input is an image <b>then</b>
+    W ← OCR(I)                    <i>▷ ML Kit or Tesseract</i>
+    x ← RebuildRows(W)            <i>▷ slope-corrected rows</i>
+    user confirms or edits x against I
+x ← Normalize(x)                  <i>▷ Bengali digits, spaces</i>
+S_R ← RuleSpans(x)
+S_M ← ∪_{m ∈ Route(x)} Group(Tag_m(x), τ)
+P ← NER_med(x) ∪ LabRows(x)        <i>▷ protected spans</i>
+S ← Merge(S_R ∪ Trim(S_M ∖ P))
+x̃ ← Replace(x, S)                 <i>▷ [NAME], [PHONE] …</i>
+F ← {(t, v, u, r, Flag(v, r))} from ParseLabs(x̃)
+y ← Template(F, ℓ)
+<b>if</b> ℓ = en <b>and</b> LLM enabled <b>then</b>
+    y′ ← LLM(StrictPrompt(F))     <i>▷ never sees x</i>
+    <b>if</b> Numbers(y′) ⊆ Numbers(F) <b>and</b> every abnormal t, v ∈ y′
+        <b>then</b> y ← y′
+<b>return</b> x̃, F, y</pre></div>
+    <div class="algo"><div class="algo-h">Algorithm 2 &nbsp;Per-language selection of a quantized PII model</div><pre>
+<b>Require</b> FP32 models M_bn, M_en; variants 𝒱; aggregations 𝒜;
+        thresholds 𝒯; dev sets D, D_free; c_max = o_max = 0.10; B = 700 MB
+<b>for</b> ℓ ∈ {bn, en}, v ∈ 𝒱 <b>do</b>
+    Q_ℓ,v ← QuantizeDynamic(M_ℓ, v)
+    check tokenizer parity and max |z_Q − z_FP32|
+𝒞 ← ∅
+<b>for</b> (v_bn, v_en, a, τ) ∈ 𝒱² × 𝒜 × 𝒯 <b>do</b>
+    run the privacy stage on D, and models only on D_free
+    λ ← free-text names missed; c ← clinical over-redaction
+    o ← other text hidden
+    <b>if</b> c ≤ c_max <b>and</b> o ≤ o_max <b>and</b> |Q_bn| + |Q_en| ≤ B <b>then</b>
+        𝒞 ← 𝒞 ∪ {(λ, leak_D, o, ·)}
+<b>return</b> argmin_𝒞 (λ, leak_D, o)      <i>▷ lexicographic</i></pre></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Preprocessing &amp; cleaning</h3>
+      <ul class="ticks">
+        <li><b>Word segmentation &amp; label alignment:</b> whitespace words, BIO tag on the first sub-word (others −100); 256 sub-words for training; on device, overlapping windows of 254 with stride 64.</li>
+        <li><b>Script profiling:</b> each mention classified Latin / Bengali / mixed by Unicode block (U+0980–U+09FF).</li>
+        <li><b>Numeric normalisation:</b> Bengali digits → ASCII, decimal commas, Unicode spaces — identical in parser and gate.</li>
+        <li><b>Span cleaning:</b> merge, subtract protected spans, trim whitespace/punctuation but never letters or Bengali vowel signs.</li>
+        <li><b>Gold integrity:</b> the generator asserts that every offset reproduces its surface string; OCR text whitespace-normalised before CER.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Quantization techniques</h3>
+      <p>Post-training <b>dynamic</b> quantization (ONNX Runtime): INT8 weights, activations quantized on the fly — no calibration data, which does not exist for Bengali clinical text with identifiers. Six variants per language:</p>
+      <div class="chips"><span>FP32</span><span>full INT8</span><span>reduced range (7-bit)</span><span>per-channel</span><span>attention MatMuls in FP32</span><span class="good">embedding-only INT8</span></div>
+      <p class="mu">Embedding-only stores the 250k-token embedding table in 8 bits but quantizes no activations, so every matrix product is exact. Selected per language with Algorithm 2.</p>
+    </div>
+  </div>
+  <div class="tbl" data-table="impl"></div>
+</section>
+
+<!-- ================================================================ RESULTS -->
+<section class="band" id="results">
+  <div class="wrap">
+    <h2>Results</h2>
+    <div class="subnav" role="tablist">
+      <button class="on" data-pane="r-deid">RQ1 · De-identification</button><button data-pane="r-ner">RQ2 · Medicine NER</button>
+      <button data-pane="r-exp">RQ3 · Explanation</button><button data-pane="r-quant">RQ4 · Quantization</button><button data-pane="r-ocr">RQ4 · OCR &amp; parity</button>
+    </div>
+
+    <div class="pane on" id="r-deid">
+      <div class="grid2">
+        <div><p>OpenMed models alone leaked <b>10.3%</b> of identifiers on held-out reports, mostly facility names and record IDs, which rules catch completely; rules alone missed every name and date. Their union cut leaks to 0.6% / 0.2% (McNemar 148 vs 0 and 107 vs 0 discordant documents). On real Bengali posts the PII models also erased <b>36.9%</b> of medicine and dosage spans; protection with the fine-tuned tagger brought this to 6.2% with no added leak, allowing a lower threshold: <b>no leak on either test set</b> with 6.9% clinical over-redaction.</p>
+          <div class="toggle" data-for="deid"><button class="on" data-cols="all">Both</button><button data-cols="1,2">Held-out</button><button data-cols="3,4">Real text</button></div>
+          <div class="tbl" data-table="deid"></div></div>
+        <figure class="fig"><img src="assets/figs/privacy_tradeoff.svg" alt="Privacy-utility trade-off" data-zoom><figcaption>Fig. 3. Privacy–utility trade-off. Thresholding the PII models alone moves along one curve; rules and medicine protection move the system to the lower-left corner.</figcaption></figure>
+      </div>
+      <details><summary>Appendix: PII models alone on the development set (E1)</summary><div class="tbl" data-table="e1"></div></details>
+    </div>
+
+    <div class="pane" id="r-ner">
+      <div class="grid2">
+        <div><p>Zero-shot OpenMed clinical NER found 70–75% of Latin-script medicines but only <b>0–9% of Bengali-script</b> ones. Fine-tuning closed the gap: Bengali-script medicine recall reached <b>81–82%</b>. The three full models are within one SD (Welch t ≈ 1.8) and 1.7–2.6 points above the published 56.13. BanglishBERT, with 40% of the parameters, was exported: INT8 ONNX is 4× smaller, 2.7× faster on CPU, 99.1% of word tags unchanged.</p>
+          <div class="tbl" data-table="ner"></div></div>
+        <figure class="fig"><img src="assets/figs/ner_bars.svg" alt="NER results" data-zoom><figcaption>Fig. 4. Bangla-HealthNER test results (mean ± SD over three seeds). Dashed: published BanglishBERT micro-F1.</figcaption></figure>
+      </div>
+      <div class="grid2">
+        <figure class="fig"><img src="assets/figs/ner_confusion.svg" alt="NER confusion matrix" data-zoom><figcaption>Fig. 5. Word-level confusion of the shipped INT8 tagger (row %). Errors are mostly <i>missed</i> words (O column); the one real confusion is Health Condition → Symptom (17%).</figcaption></figure>
+        <div><p>Medicine (93% of words), Specialist (95%) and Age (87%) are reliable. Only <b>0.9%</b> of Medicine words got another type, so protection fails by omission — which the rule-based lab-row protection partly covers.</p><div class="tbl" data-table="e18"></div></div>
+      </div>
+    </div>
+
+    <div class="pane" id="r-exp">
+      <p><b>LLMs must not decide abnormality.</b> Reading reports directly, every model stated the wrong direction for 17–42% of abnormal results. <b>Correct is not safe:</b> with the fact sheet, the best models still added a misleading interpretation in about a third of outputs; the strict prompt raised Qwen3-1.7B's safety from 60% to 96%. <b>Bengali fails:</b> 55–99% of abnormal results went unmentioned under free/grounded prompts, up to 100% of outputs looped at 1,024 tokens, and the native rater preferred the template on all 30 reports.</p>
+      <div class="arena card">
+        <div class="arena-h"><b>Explanation explorer</b>
+          <label>Model <select id="ex-model"></select></label>
+          <div class="toggle" id="ex-lang"><button class="on" data-l="en">English</button><button data-l="bn">Bengali</button></div></div>
+        <div id="ex-chart" class="bars"></div>
+        <p class="mu small">Judged % of 100 held-out outputs. Dashed line = deterministic template. Missing bars: condition not run for that model.</p>
+      </div>
+      <div class="grid2">
+        <figure class="fig"><img src="assets/figs/explain_conditions.svg" alt="Explanation by condition" data-zoom><figcaption>Fig. 6. Correctness and safety as grounding increases. Star: blinded native-speaker correctness (60%).</figcaption></figure>
+        <div><div class="tbl" data-table="native"></div><div class="tbl" data-table="fail"></div></div>
+      </div>
+      <details><summary>Full judged-quality table (Table V)</summary><div class="tbl" data-table="explain"></div></details>
+      <p class="mu small">Judge: Qwen2.5-14B-Instruct, rubric v2 (extract the stated status, code scores it). A first holistic rubric failed validation (κ = 0.00). Judge vs native rater: 82% agreement on correctness, 87% on safety, but it over-rated Bengali clarity (4.21 vs 2.27) — Bengali quality is therefore measured by people.</p>
+    </div>
+
+    <div class="pane" id="r-quant">
+      <div class="grid2">
+        <div><p>With plain dynamic INT8 PII models the phone pipeline leaked <b>16.5%</b> on held-out reports. Format rules hid the cause on labelled test sets, so we used the free-text set where only the model can find a name: the English model tolerated INT8 (1.5% missed = FP32), but the <b>Bengali model missed every unlabelled name</b>. Range-reduced and attention-excluded variants recovered only partly (14–26%); <b>embedding-only INT8 matched FP32 exactly at half the size</b>.</p>
+          <div class="cfg"><b>Shipped configuration</b><code>{"ner":"int8", "pii":{"bn":"int8emb","en":"int8noattn"}, "agg":"mean", "threshold":0.1, "rules_v2":true}</code>
+            <span>689 MB · 0.0% leak held-out and real · 1.0% free text (Bengali 0%) · 181 ms / report on 4 CPU threads</span></div></div>
+        <figure class="fig"><img src="assets/figs/quantization.svg" alt="Quantization fragility" data-zoom><figcaption>Fig. 7. Quantization fragility: unlabelled names missed by the PII models alone (free-text test). Size below each group.</figcaption></figure>
+      </div>
+      <div class="tbl" data-table="quant"></div>
+      <p class="mu small">Transparency: the 700 MB budget was fixed after an earlier tuning round, and a round that selected settings hiding 58% of all text was rejected; both are reported.</p>
+    </div>
+
+    <div class="pane" id="r-ocr">
+      <div class="grid2">
+        <div><p>Clean printed pages had a 1.6% character error rate, yet only 65% of lab rows were read exactly: single-character errors hit units (x10^9/L → x1049/L) and test names (25-OH → 25-0H), and OCR errors broke format rules (Dr. → pr., a dropped leading zero). OCR almost never <b>reverses</b> a flag (1 of 198 rows) — it causes rows to be missed, which the app reports as “not read”. This is why the human check step is mandatory.</p>
+          <div class="tbl" data-table="ocr"></div></div>
+        <figure class="fig"><img src="assets/figs/ocr_flag_confusion.svg" alt="OCR flag confusion" data-zoom><figcaption>Fig. 8. Lab-flag confusion after OCR (desktop proxy; counts).</figcaption></figure>
+      </div>
+      <h3>One core, three implementations</h3>
+      <p>The rules, parser, templates, gate, redaction and model-output decoding are generated or ported from the Python reference and checked against golden files on every build — on the JVM, on the phone (built-in self-test), in Node and in the browser.</p>
+      <div class="tbl" data-table="golden"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PRODUCTS -->
+<section class="wrap" id="products">
+  <h2>The products: Android app &amp; web app</h2>
+  <p class="sub">Same core, same privacy guarantee. Separate Bengali and English interfaces, a human check before every explanation, and provenance labels on every result.</p>
+  <div class="prod">
+    <div class="prod-text"><span class="tag">Web app</span><h3>Runs entirely in your browser</h3>
+      <ul class="ticks"><li>Tesseract.js OCR, rules, optional ONNX privacy models — the report never leaves the tab (CSP: self only).</li>
+        <li>Interactive donut and range gauges; correct a misread value and the rules re-flag it.</li>
+        <li>Original and protected text <b>side by side</b>: show a hidden part again or hide any selection.</li>
+        <li><b>My reports</b>: passphrase-encrypted history (AES-GCM) with pseudonymous person IDs and per-test <b>trends</b>.</li>
+        <li><b>Doctor-visit summary</b>: printable, no personal details.</li></ul>
+      <a class="btn accent" href="app/">▶ Launch web app</a></div>
+    <div class="shots">
+      <figure><img src="assets/screens/web_home_dark.jpg" alt="Web app home, dark mode" data-zoom><figcaption>Home (Bengali, dark mode) — running locally</figcaption></figure>
+      <figure><img src="assets/screens/web_summary.jpg" alt="Web app summary" data-zoom><figcaption>Summary with interactive donut</figcaption></figure>
+      <figure><img src="assets/screens/web_privacy.jpg" alt="Side-by-side privacy view" data-zoom><figcaption>Side-by-side privacy view</figcaption></figure>
+      <figure><img src="assets/screens/web_history.jpg" alt="History and trends" data-zoom><figcaption>Encrypted history and trends</figcaption></figure>
+    </div>
+  </div>
+  <div class="prod rev">
+    <div class="prod-text"><span class="tag">Android app</span><h3>Offline by construction</h3>
+      <ul class="ticks"><li>No INTERNET permission — Android itself blocks any upload; no camera or storage permission; photo deleted after reading.</li>
+        <li>ML Kit (Latin) + Tesseract (ben+eng) with tilt-corrected row rebuilding.</li>
+        <li>Kotlin core byte-identical to Python on 909 texts; on-phone self-test and speed test.</li>
+        <li>Splash, adaptive icon, first-launch language choice, tap-for-detail sheets, value correction, feedback.</li></ul>
+      <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi/releases">📱 Get the APK</a></div>
+    <div class="shots one">
+      <figure><img src="assets/screens/app_design_render.jpg" alt="Android app screens" data-zoom><figcaption>Android app v0.3 screens (design render of the Compose UI; device screenshots from the Samsung Galaxy S23 Ultra to follow)</figcaption></figure>
+    </div>
+  </div>
+  <div class="shots row3">
+    <figure><img src="assets/screens/web_doctor_summary.jpg" alt="Doctor-visit summary" data-zoom><figcaption>Doctor-visit summary (print / PDF)</figcaption></figure>
+    <figure><img src="assets/screens/web_mobile_summary.jpg" alt="Web app on a phone" data-zoom><figcaption>Web app on a 360-px phone screen</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================================================================ LIVE DEMO -->
+<section class="band" id="demo">
+  <div class="wrap">
+    <h2>Live demo</h2>
+    <p class="sub">The real pipeline core (format rules, lab parser, flags, template) running in this page. Nothing is sent anywhere. Samples are invented; the full app adds OCR, the optional privacy models and history.</p>
+    <div class="demo card">
+      <div class="demo-h">
+        <label>Sample <select id="d-sample"></select></label>
+        <div class="toggle" id="d-lang"><button class="on" data-l="bn">বাংলা</button><button data-l="en">English</button></div>
+        <button class="btn accent sm" id="d-run">Run ▸</button>
+      </div>
+      <div class="grid3">
+        <div><h4>Report text <small>(editable)</small></h4><textarea id="d-text" spellcheck="false"></textarea></div>
+        <div><h4>Protected text</h4><div id="d-chips" class="chips small"></div><pre id="d-red" class="mono"></pre></div>
+        <div><h4>Results &amp; explanation</h4><div id="d-labs"></div><div id="d-exp" class="exp"></div></div>
+      </div>
+      <p class="mu small" id="d-time"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ CASES -->
+<section class="wrap" id="cases">
+  <h2>Why template-first? Failure cases</h2>
+  <p class="sub">Illustrative reconstructions of the failure types observed in E6/E6c and the E8 OCR study (see Table IV), with the safeguard that handles each.</p>
+  <div class="cases card">
+    <div class="case-tabs" id="case-tabs"></div>
+    <div class="convo" id="convo"></div>
+  </div>
+</section>
+
+<!-- ================================================================ LIMITATIONS -->
+<section class="wrap narrow" id="limits">
+  <h2>Limitations &amp; ethics</h2>
+  <div class="grid2">
+    <ul class="ticks warn">
+      <li>Identifiers and reports are synthetic or injected; real Bangladeshi reports, West Bengal and diaspora documents and handwriting were not tested.</li>
+      <li>One native rater, who is also the author; the template's fixed pattern makes blinding partial. No clinician reviewed explanations.</li>
+      <li>The judge-validation reference was produced by another LLM (Claude).</li>
+      <li>The parser covers tabular lab rows only; v2 header rules and the 700 MB budget were set after earlier experiments (reported).</li>
+      <li>Phone timings come from a flagship device; phone OCR results are pending.</li>
+    </ul>
+    <div class="card tint"><b>Ethics.</b> No real patient data were used; all identifiers are invented. The apps give no diagnosis or treatment advice, always recommend showing the report to a doctor, and send no data off the device.</div>
+  </div>
+  <h2>Main contributions</h2>
+  <ol class="contrib">
+    <li><b>Hybrid de-identification</b> — rules ∪ script-routed OpenMed PII models, minus fine-tuned medicine spans, so clinical content survives.</li>
+    <li><b>Code-mixed medicine tagger</b> — Bengali-script medicine recall 81%, exported to a 106 MB INT8 model.</li>
+    <li><b>Grounded generation study</b> — four small LLMs × three prompt conditions × two languages, validated judge and native-speaker check.</li>
+    <li><b>Quantization fragility</b> — dynamic INT8 disables unlabelled-name detection in a Bengali PII model; embedding-only INT8 avoids it.</li>
+    <li><b>Verified deployment</b> — Android and in-browser implementations byte-identical to the Python reference on 2,327 golden cases.</li>
+  </ol>
+</section>
+
+<!-- ================================================================ CITATION -->
+<section class="band" id="citation">
+  <div class="wrap narrow">
+    <h2>BibTeX</h2>
+    <div class="bib"><button class="btn sm" id="copy-bib">Copy</button><pre id="bib">@misc{dey2026shasthosathi,
+  title  = {Fact-Grounded Small Language Models and Code-Mixed Clinical NER
+            for Privacy-Preserving On-Device Explanation of Bengali Health Reports},
+  author = {Dey, Samrat Kumar},
+  year   = {2026},
+  institution = {Institute for Data Science and Informatics, University of Missouri},
+  note   = {ShasthoSathi project},
+  url    = {https://github.com/CIMILab/Bangla_ShasthoSathi}
+}</pre></div>
+  </div>
+</section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p><img src="assets/logo.svg" width="22" height="22" alt=""> <b>ShasthoSathi</b> · স্বাস্থ্যসাথী — a research prototype, not medical advice.</p>
+  <p class="mu small">Experiments ran on the Hellbender cluster, University of Missouri. Page layout inspired by the Bangla MedConv project page. The author used Anthropic's Claude as a coding and writing assistant.</p>
+</div></footer>
+
+<div class="lightbox" id="lightbox" hidden><img alt="Expanded figure"><button aria-label="Close">×</button></div>
+<script type="module" src="js/site.js"></script>
+</body>
+</html>
