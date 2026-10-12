@@ -36,7 +36,7 @@
       <b>ShasthoSathi</b> (স্বাস্থ্যসাথী, “health companion”) explains them <b>on the device</b>: hybrid de-identification, code-mixed medicine recognition,
       rule-based abnormality flags and a <b>template-first</b> explanation. Small LLMs help only where they are verifiably safe.</p>
     <div class="buttons">
-      <a class="btn" href="assets/paper_draft.pdf">📄 Paper (draft)</a>
+      <a class="btn" href="assets/ShasthoSathi_paper.pdf">📄 Paper (PDF)</a>
       <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi">⌨ Code</a>
       <a class="btn accent" href="app/">▶ Launch web app</a>
       <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi/releases">📱 Android app</a>
@@ -47,7 +47,7 @@
       <div class="ctr"><b data-count="81" data-suffix="%">0</b><span>Bengali-script medicine recall<br><small>from &lt;10% zero-shot</small></span></div>
       <div class="ctr"><b data-count="97" data-suffix="%">0</b><span>correct English explanations<br><small>Qwen3-1.7B, strict + facts</small></span></div>
       <div class="ctr"><b data-count="100" data-suffix="%">0</b><span>Bengali template correct<br><small>vs 60% for the best LLM (native rater)</small></span></div>
-      <div class="ctr"><b data-count="2327">0</b><span>golden cases identical<br><small>Python = Kotlin = JavaScript</small></span></div>
+      <div class="ctr"><b data-count="262" data-suffix=" ms">0</b><span>per report on a phone<br><small>all 3 models · Galaxy S23 Ultra · leak = server</small></span></div>
     </div>
   </div>
 </header>
@@ -61,7 +61,8 @@
   Fine-tuning on Bangla-HealthNER raised <b>Bengali-script medicine recall from below 10% to 81%</b>, and INT8 export reduced the tagger to 106 MB with a 0.09-point F1 loss.
   Four instruction-tuned models (0.5B–3.8B) <b>flipped high/low in 17–42% of abnormal results</b> when reading reports directly; a rule-computed fact sheet and a strict prompt raised Qwen3-1.7B to 97% correct and 96% safe in English (validated LLM judge, κ = 0.80).
   In Bengali every model failed: a blinded native-speaker check rated a <b>deterministic template 100% correct versus 60%</b> for the best model.
-  We also show that standard dynamic INT8 quantization <b>silently destroys a Bengali PII model's ability to find unlabelled names</b> (100% missed), whereas quantizing only the embedding table preserves full accuracy at half the size.</p>
+  We also show that standard dynamic INT8 quantization <b>silently destroys a Bengali PII model's ability to find unlabelled names</b> (100% missed), whereas quantizing only the embedding table preserves full accuracy at half the size.
+  On a Galaxy S23 Ultra the full pipeline runs offline in a <b>median 262 ms per report</b> and matches the server's leak rate on 1,100 test documents — but only after we found that INT8 matrix multiplications made the English PII model <b>miss 15.5% of free-text names on the phone versus 1.0% on the server</b>.</p>
 
   <h3>Research questions</h3>
   <div class="rq">
@@ -77,6 +78,9 @@
   <div class="wrap">
     <h2>Overview</h2>
     <p class="sub">Two design rules follow from the experiments: <b>an LLM never decides whether a value is abnormal</b> (rules compare each value with the report's own range), and <b>an LLM never sees the report</b> (only an identifier-free fact sheet).</p>
+    <figure class="fig wide"><img src="assets/figs/pipeline.svg" alt="ShasthoSathi pipeline in four stages: (1) Read — on-device OCR and a user check against the photo; (2) Protect — format rules and script-routed PII encoders, minus medicine and lab-row spans; (3) Flag — rules compare each value with the report's own range; (4) Explain — Bengali template by default, optional English LLM behind a number and coverage gate." data-zoom>
+      <figcaption>Fig. 1. ShasthoSathi pipeline. Every stage runs offline: the Android app has no internet permission and the web app runs inside the browser tab. Tap to enlarge.</figcaption></figure>
+    <details class="flowtext"><summary>Step-by-step (text version)</summary>
     <figure class="flow" aria-label="ShasthoSathi pipeline">
       <div class="lane read"><h4>① Read</h4>
         <div class="box">Photo or pasted text<small>English · Bengali · mixed</small></div>
@@ -92,11 +96,11 @@
         <div class="box">Fact sheet<small>test · value · unit · range · flag</small></div>
         <div class="box out">Bengali: deterministic template<small>patient-facing test names</small></div>
         <div class="box opt">English (optional): Qwen3-1.7B, strict<small>shown only if the number + coverage gate passes</small></div></div>
-      <figcaption>Fig. 1. ShasthoSathi pipeline. Every stage runs offline. The Android app has no internet permission; the web app runs inside the browser tab.
-        <a href="#" data-zoom="assets/figs/pipeline.svg">Paper version of the figure</a>.</figcaption>
+      
     </figure>
+    </details>
     <div class="stats">
-      <div><b>4</b><span>stages</span></div><div><b>0</b><span>network calls</span></div><div><b>689 MB</b><span>phone privacy models</span></div><div><b>106 MB</b><span>INT8 medicine tagger</span></div>
+      <div><b>4</b><span>stages</span></div><div><b>0</b><span>network calls</span></div><div><b>770 MB</b><span>phone privacy models</span></div><div><b>262 ms</b><span>per report on the phone</span></div>
     </div>
   </div>
 </section>
@@ -182,6 +186,8 @@ y ← Template(F, ℓ)
 <section class="band" id="results">
   <div class="wrap">
     <h2>Results</h2>
+    <figure class="fig wide"><img src="assets/figs/radar_summary.svg" alt="Radar charts: de-identification, explanation quality and medicine tagger per entity type" data-zoom>
+      <figcaption>Results at a glance (all axes 0–100, higher is better; bold numbers = shipped configuration). (a) De-identification: privacy = 100 − leak, clinical text kept = 100 − over-redaction. (b) Qwen3-1.7B as grounding increases vs. the template. (c) Per-type precision, recall and F1 of the INT8 medicine tagger.</figcaption></figure>
     <div class="subnav" role="tablist">
       <button class="on" data-pane="r-deid">RQ1 · De-identification</button><button data-pane="r-ner">RQ2 · Medicine NER</button>
       <button data-pane="r-exp">RQ3 · Explanation</button><button data-pane="r-quant">RQ4 · Quantization</button><button data-pane="r-ocr">RQ4 · OCR &amp; parity</button>
@@ -229,11 +235,18 @@ y ← Template(F, ℓ)
     <div class="pane" id="r-quant">
       <div class="grid2">
         <div><p>With plain dynamic INT8 PII models the phone pipeline leaked <b>16.5%</b> on held-out reports. Format rules hid the cause on labelled test sets, so we used the free-text set where only the model can find a name: the English model tolerated INT8 (1.5% missed = FP32), but the <b>Bengali model missed every unlabelled name</b>. Range-reduced and attention-excluded variants recovered only partly (14–26%); <b>embedding-only INT8 matched FP32 exactly at half the size</b>.</p>
-          <div class="cfg"><b>Shipped configuration</b><code>{"ner":"int8", "pii":{"bn":"int8emb","en":"int8noattn"}, "agg":"mean", "threshold":0.1, "rules_v2":true}</code>
-            <span>689 MB · 0.0% leak held-out and real · 1.0% free text (Bengali 0%) · 181 ms / report on 4 CPU threads</span></div></div>
+          <p><b>Hardware dependence.</b> The first phone choice (English INT8 except attention) looked fine on the server, but on the phone it missed names in <b>15.5%</b> of free-text documents vs. 1.0% on the server — all 58 phone-only leaks were English names inside sentences. The tokenizer was identical and the Bengali embedding-only model gave identical labels, pointing to INT8 matrix multiplications, which ONNX Runtime runs with different integer kernels on ARM and x86. Shipping embedding-only INT8 for <b>both</b> PII models made the phone match the server exactly.</p>
+          <div class="cfg"><b>Shipped configuration</b><code>{"ner":"int8", "pii":{"bn":"int8emb","en":"int8emb"}, "agg":"mean", "threshold":0.1, "rules_v2":true}</code>
+            <span>770 MB PII models (70 MB over the 700 MB budget) · server: 0.0% leak held-out and real, 0.75% free text</span></div></div>
         <figure class="fig"><img src="assets/figs/quantization.svg" alt="Quantization fragility" data-zoom><figcaption>Fig. 7. Quantization fragility: unlabelled names missed by the PII models alone (free-text test). Size below each group.</figcaption></figure>
       </div>
       <div class="tbl" data-table="quant"></div>
+      <h3>On the phone (Samsung Galaxy S23 Ultra)</h3>
+      <div class="grid2">
+        <div><p>A built-in leak test runs the same 1,100 documents through the phone pipeline and scores them with the server's metric. With the shipped configuration the phone <b>matched the server on every set</b> and hid identical spans in 1,097 of 1,100 documents; the other three differed only in medicine protection or other text, never in a leak. Token ids were identical for all three models and word labels identical for both PII models (the INT8 medicine tagger differs on 1.1% of words).</p>
+          <div class="tbl" data-table="phone"></div></div>
+        <div class="tbl" data-table="phonespeed"></div>
+      </div>
       <p class="mu small">Transparency: the 700 MB budget was fixed after an earlier tuning round, and a round that selected settings hiding 58% of all text was rejected; both are reported.</p>
     </div>
 
@@ -273,11 +286,14 @@ y ← Template(F, ℓ)
     <div class="prod-text"><span class="tag">Android app</span><h3>Offline by construction</h3>
       <ul class="ticks"><li>No INTERNET permission — Android itself blocks any upload; no camera or storage permission; photo deleted after reading.</li>
         <li>ML Kit (Latin) + Tesseract (ben+eng) with tilt-corrected row rebuilding.</li>
-        <li>Kotlin core byte-identical to Python on 909 texts; on-phone self-test and speed test.</li>
+        <li>All three models on the phone (ONNX Runtime + the Hugging Face tokenizer), loaded once from a folder you pick — no storage permission.</li>
+        <li>Leak identical to the server on 1,100 test documents; 262 ms per report on a Galaxy S23 Ultra.</li>
+        <li>Kotlin core byte-identical to Python on 909 texts; on-phone self-test, leak test and speed test.</li>
         <li>Splash, adaptive icon, first-launch language choice, tap-for-detail sheets, value correction, feedback.</li></ul>
       <a class="btn" href="https://github.com/CIMILab/Bangla_ShasthoSathi/releases">📱 Get the APK</a></div>
-    <div class="shots one">
-      <figure><img src="assets/screens/app_design_render.jpg" alt="Android app screens" data-zoom><figcaption>Android app v0.3 screens (design render of the Compose UI; device screenshots from the Samsung Galaxy S23 Ultra to follow)</figcaption></figure>
+    <div class="shots phone2">
+      <figure><img src="assets/screens/screen_phone_privacy.jpg" alt="Phone privacy view with the on-phone models active" data-zoom><figcaption>Privacy view on the S23 with the on-phone models: identifiers become tags, the medicine and dose stay visible</figcaption></figure>
+      <figure><img src="assets/screens/screen_phone_summary.jpg" alt="Phone summary screen in Bengali" data-zoom><figcaption>Summary with “how this was made” provenance (Bengali note without lab rows)</figcaption></figure>
     </div>
   </div>
   <div class="shots row3">
@@ -326,7 +342,7 @@ y ← Template(F, ℓ)
       <li>One native rater, who is also the author; the template's fixed pattern makes blinding partial. No clinician reviewed explanations.</li>
       <li>The judge-validation reference was produced by another LLM (Claude).</li>
       <li>The parser covers tabular lab rows only; v2 header rules and the 700 MB budget were set after earlier experiments (reported).</li>
-      <li>Phone timings come from a flagship device; phone OCR results are pending.</li>
+      <li>Phone results come from one flagship (Galaxy S23 Ultra); the privacy models need 770 MB and the app 2.0 GB of memory — too much for low-cost phones. OCR of real phone photographs is not yet evaluated.</li>
     </ul>
     <div class="card tint"><b>Ethics.</b> No real patient data were used; all identifiers are invented. The apps give no diagnosis or treatment advice, always recommend showing the report to a doctor, and send no data off the device.</div>
   </div>
@@ -335,8 +351,8 @@ y ← Template(F, ℓ)
     <li><b>Hybrid de-identification</b> — rules ∪ script-routed OpenMed PII models, minus fine-tuned medicine spans, so clinical content survives.</li>
     <li><b>Code-mixed medicine tagger</b> — Bengali-script medicine recall 81%, exported to a 106 MB INT8 model.</li>
     <li><b>Grounded generation study</b> — four small LLMs × three prompt conditions × two languages, validated judge and native-speaker check.</li>
-    <li><b>Quantization fragility</b> — dynamic INT8 disables unlabelled-name detection in a Bengali PII model; embedding-only INT8 avoids it.</li>
-    <li><b>Verified deployment</b> — Android and in-browser implementations byte-identical to the Python reference on 2,327 golden cases.</li>
+    <li><b>Quantization fragility</b> — dynamic INT8 disables unlabelled-name detection in a Bengali PII model; embedding-only INT8 avoids it; INT8 matrix multiplications made an English model leak 15× more names on the phone than on the server.</li>
+    <li><b>Verified deployment</b> — Android and in-browser implementations byte-identical to the Python reference on 2,327 golden cases; on-phone leak identical to the server on 1,100 documents.</li>
   </ol>
 </section>
 
